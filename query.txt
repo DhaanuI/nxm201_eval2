@@ -1,0 +1,47 @@
+//userscollection
+
+db.users.find()
+[
+  { _id: 1, name: 'Alice', age: 25 },
+  { _id: 2, name: 'Bob', age: 30 },
+  { _id: 3, name: 'Charlie', age: 35 }
+]
+
+---------------------------------------------
+
+//purchases collection
+
+db.purchases.find()
+[
+  { _id: 1, user_id: 1, item: 'book', price: 10 },
+  { _id: 2, user_id: 1, item: 'pen', price: 5 },
+  { _id: 3, user_id: 2, item: 'book', price: 15 },
+  { _id: 4, user_id: 2, item: 'pen', price: 6 },
+  { _id: 5, user_id: 3, item: 'book', price: 20 },
+  { _id: 6, user_id: 3, item: 'pen', price: 7 }
+]
+
+
+------------------------------------------------
+
+//Creating INDEX for purchases collection user_id
+ db.purchases.createIndex({user_id:1})
+
+ ------------------------------------------------
+
+
+//used lookup to join users and purchases and then used project to get total_purchases and then added fields by doing sum of purchases price and then sorted descending order
+
+
+db.users.aggregate([
+    {
+        $lookup:
+        {from:"purchases",localField:"_id",foreignField:"user_id",as:"purchases"}},
+        {$project:
+        {total_purchases:{$size:"$purchases"},name:1,purchases:1}},
+        {$addFields:
+        {total_spending:{$sum:"$purchases.price"}}},
+        {$project:
+        {purchases:0}},
+        {$sort:
+        {total_spending:-1}}])
